@@ -112,23 +112,34 @@ class HanCoApp {
     const traceBtn = document.getElementById('trace-btn');
     if (traceBtn) {
       traceBtn.addEventListener('click', () => {
-        if (this.canvasWriter && this.currentCharacter) {
-          const isTraceMode = this.canvasWriter.toggleTraceMode();
-          traceBtn.classList.toggle('active', isTraceMode);
-          
-          if (isTraceMode) {
-            // Show trace outline
-            setTimeout(() => {
-              this.canvasWriter.showTraceOutline();
-            }, 100);
-            showToast('Đã bật chế độ tô chữ! Tô theo đường nét mờ để dễ nhớ nhé! 🎨', 'info', 5000);
-          } else {
-            // Clear and reload without trace
-            this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: false });
-            showToast('Đã tắt chế độ tô chữ', 'info');
-          }
-        } else {
+        if (!this.currentCharacter) {
           showToast('Vui lòng chọn chữ để luyện tập', 'warning');
+          return;
+        }
+        
+        if (!this.canvasWriter) {
+          showToast('Đang khởi tạo canvas...', 'info');
+          setTimeout(() => {
+            if (this.canvasWriter) {
+              this.canvasWriter.toggleTraceMode();
+            }
+          }, 500);
+          return;
+        }
+        
+        const isTraceMode = this.canvasWriter.toggleTraceMode();
+        traceBtn.classList.toggle('active', isTraceMode);
+        
+        if (isTraceMode) {
+          // Show trace outline after a delay
+          setTimeout(() => {
+            if (this.canvasWriter) {
+              this.canvasWriter.showTraceOutline();
+            }
+          }, 200);
+          showToast('✨ Đã bật chế độ tô chữ! Tô theo đường nét mờ để dễ nhớ nhé! 🎨', 'success', 5000);
+        } else {
+          showToast('Đã tắt chế độ tô chữ', 'info');
         }
       });
     }
@@ -517,10 +528,14 @@ class HanCoApp {
     document.getElementById('meaning-display').textContent = char.meaning || '';
     document.getElementById('practice-title').textContent = `Luyện viết: ${char.hanzi}`;
     
-    // Load character in canvas
-    if (this.canvasWriter) {
-      this.canvasWriter.loadCharacter(hanzi, { showGuide: false, traceMode: false });
-    }
+    // Load character in canvas - wait a bit for canvas to be ready
+    setTimeout(() => {
+      if (this.canvasWriter) {
+        this.canvasWriter.loadCharacter(hanzi, { showGuide: false, traceMode: false });
+      } else {
+        console.warn('Canvas writer not ready yet');
+      }
+    }, 100);
     
     // Reset trace button state
     const traceBtn = document.getElementById('trace-btn');
@@ -533,7 +548,7 @@ class HanCoApp {
       if (this.audioReader && char.hanViet) {
         this.audioReader.speakCharacter(char);
       }
-    }, 500);
+    }, 800);
     
     // Show practice section
     const practiceSection = document.getElementById('practice-section');

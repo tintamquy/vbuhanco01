@@ -246,41 +246,74 @@ export class CanvasWriter {
       const rect = this.canvas.getBoundingClientRect();
       
       // Destroy existing instance if any
-      if (this.hanziWriter && this.hanziWriter.destroy) {
-        this.hanziWriter.destroy();
-      }
-      
-      this.hanziWriter = HanziWriter.create(this.canvas, hanzi, {
-        width: rect.width,
-        height: rect.height,
-        padding: 20,
-        showOutline: this.traceMode || this.options.showGuide || options.showGuide || false,
-        showCharacter: false,
-        strokeColor: this.options.guideColor,
-        outlineColor: this.traceMode ? 'rgba(139, 69, 19, 0.5)' : this.options.guideColor,
-        radicalColor: this.options.guideColor,
-        strokeWidth: this.traceMode ? 4 : 2,
-        strokeAnimationSpeed: 2
-      });
-      
-      // Nếu trace mode, hiển thị outline ngay và rõ hơn
-      if (this.traceMode && this.hanziWriter) {
-        this.hanziWriter.showOutline({
-          onComplete: () => {
-            console.log('Outline shown for tracing');
-            // Redraw grid after outline
-            if (this.options.showGrid) {
-              this.drawGrid();
-            }
+      if (this.hanziWriter) {
+        try {
+          if (this.hanziWriter.destroy) {
+            this.hanziWriter.destroy();
           }
-        });
+        } catch (e) {
+          console.warn('Error destroying hanzi writer:', e);
+        }
+        this.hanziWriter = null;
       }
+      
+      // Wait a bit for canvas to be ready
+      setTimeout(() => {
+        try {
+          this.hanziWriter = HanziWriter.create(this.canvas, hanzi, {
+            width: rect.width,
+            height: rect.height,
+            padding: 20,
+            showOutline: false, // Don't show by default
+            showCharacter: false,
+            strokeColor: this.options.guideColor,
+            outlineColor: 'rgba(139, 69, 19, 0.6)', // Rõ hơn cho trace
+            radicalColor: this.options.guideColor,
+            strokeWidth: 3,
+            strokeAnimationSpeed: 2
+          });
+          
+          console.log('Hanzi Writer created for:', hanzi);
+          
+          // Nếu trace mode, hiển thị outline ngay
+          if (this.traceMode && this.hanziWriter) {
+            setTimeout(() => {
+              this.showTraceOutline();
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Error creating Hanzi Writer:', error);
+          // Fallback: draw simple outline
+          this.drawSimpleOutline(hanzi);
+        }
+      }, 50);
       
       return this.hanziWriter;
     } else {
-      console.warn('Hanzi Writer chưa được load');
+      console.warn('Hanzi Writer chưa được load, sử dụng fallback');
+      // Fallback: draw simple outline
+      this.drawSimpleOutline(hanzi);
       return null;
     }
+  }
+  
+  // Fallback: Vẽ outline đơn giản nếu Hanzi Writer không hoạt động
+  drawSimpleOutline(hanzi) {
+    const ctx = this.ctx;
+    const size = this.canvas.width / (window.devicePixelRatio || 1);
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const fontSize = size * 0.6;
+    
+    ctx.save();
+    ctx.font = `${fontSize}px Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(139, 69, 19, 0.15)';
+    ctx.fillText(hanzi, centerX, centerY);
+    ctx.restore();
+    
+    console.log('Drew simple outline for:', hanzi);
   }
   
   // Xem thứ tự nét với animation
@@ -303,25 +336,106 @@ export class CanvasWriter {
   
   // Hiển thị outline để tô
   showTraceOutline() {
-    if (!this.hanziWriter) return;
+    if (!this.targetCharacter) {
+      console.warn('No character to trace');
+      return;
+    }
     
+    // Clear canvas first
     this.clear();
-    this.hanziWriter.showOutline({
-      onComplete: () => {
-        // Redraw grid
-        if (this.options.showGrid) {
-          this.drawGrid();
+    
+    if (this.hanziWriter) {
+      try {
+        // Method 1: Try showOutline
+        if (typeof this.hanziWriter.showOutline === 'function') {
+          this.hanziWriter.showOutline({
+            onComplete: () => {
+              console.log('Outline shown via showOutline');
+              if (this.options.showGrid) {
+                this.drawGrid();
+              }
+            },
+            onError: (err) => {
+              console.warn('showOutline error, trying alternative:', err);
+              this.showOutlineAlternative();
+            }
+          });
+        } else {
+          // Method 2: Try setOptions and show
+          this.hanziWriter.setOptions({
+            showOutline: true,
+            outlineColor: 'rgba(139, 69, 19, 0.6)'
+          });
+          
+          // Try to trigger outline display
+          if (typeof this.hanziWriter.show === 'function') {
+            this.hanziWriter.show();
+          }
+          
+          // Redraw grid
+          if (this.options.showGrid) {
+            this.drawGrid();
+          }
         }
+      } catch (error) {
+        console.error('Error showing outline:', error);
+        this.showOutlineAlternative();
       }
-    });
+    } else {
+      // Fallback
+      this.showOutlineAlternative();
+    }
+  }
+  
+  // Alternative method to show outline
+  showOutlineAlternative() {
+    console.log('Using alternative outline method');
+    if (!this.targetCharacter) return;
+    
+    // Draw character as outline using canvas
+    const ctx = this.ctx;
+    const size = this.canvas.width / (window.devicePixelRatio || 1);
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const fontSize = size * 0.5;
+    
+    ctx.save();
+    ctx.font = `bold ${fontSize}px "Microsoft YaHei", "SimSun", Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Draw outline (stroke)
+    ctx.strokeStyle = 'rgba(139, 69, 19, 0.6)';
+    ctx.lineWidth = 4;
+    ctx.strokeText(this.targetCharacter, centerX, centerY);
+    
+    // Draw fill (lighter)
+    ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
+    ctx.fillText(this.targetCharacter, centerX, centerY);
+    
+    ctx.restore();
+    
+    // Redraw grid
+    if (this.options.showGrid) {
+      this.drawGrid();
+    }
   }
   
   // Bật/tắt chế độ tô chữ
   toggleTraceMode() {
     this.traceMode = !this.traceMode;
+    
     if (this.targetCharacter) {
-      this.loadCharacter(this.targetCharacter, { traceMode: this.traceMode });
+      if (this.traceMode) {
+        // Bật trace mode - hiển thị outline
+        this.loadCharacter(this.targetCharacter, { traceMode: true });
+      } else {
+        // Tắt trace mode - chỉ clear và reload
+        this.clear();
+        this.loadCharacter(this.targetCharacter, { traceMode: false });
+      }
     }
+    
     return this.traceMode;
   }
   
