@@ -315,6 +315,11 @@ a:hover {
 .char-details p {
   margin-bottom: var(--spacing-sm);
   font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
 }
 
 /* Canvas Container */

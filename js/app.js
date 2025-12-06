@@ -2,6 +2,7 @@
 import { CanvasWriter } from './modules/canvas-writer.js';
 import { QuizEngine } from './modules/quiz-engine.js';
 import { ProgressTracker } from './modules/progress-tracker.js';
+import { AudioReader } from './modules/audio-reader.js';
 import { basicStrokes } from './data/strokes.js';
 import { radicals214 } from './data/radicals.js';
 import { liushu } from './data/liushu.js';
@@ -14,6 +15,7 @@ class HanCoApp {
     this.canvasWriter = null;
     this.quizEngine = new QuizEngine();
     this.progressTracker = new ProgressTracker();
+    this.audioReader = new AudioReader();
     this.currentCharacter = null;
     
     this.init();
@@ -110,14 +112,23 @@ class HanCoApp {
     const traceBtn = document.getElementById('trace-btn');
     if (traceBtn) {
       traceBtn.addEventListener('click', () => {
-        if (this.canvasWriter) {
+        if (this.canvasWriter && this.currentCharacter) {
           const isTraceMode = this.canvasWriter.toggleTraceMode();
           traceBtn.classList.toggle('active', isTraceMode);
+          
           if (isTraceMode) {
-            showToast('Đã bật chế độ tô chữ! Tô theo đường nét mờ để dễ nhớ nhé! 🎨', 'info', 4000);
+            // Show trace outline
+            setTimeout(() => {
+              this.canvasWriter.showTraceOutline();
+            }, 100);
+            showToast('Đã bật chế độ tô chữ! Tô theo đường nét mờ để dễ nhớ nhé! 🎨', 'info', 5000);
           } else {
+            // Clear and reload without trace
+            this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: false });
             showToast('Đã tắt chế độ tô chữ', 'info');
           }
+        } else {
+          showToast('Vui lòng chọn chữ để luyện tập', 'warning');
         }
       });
     }
@@ -129,10 +140,47 @@ class HanCoApp {
       });
     }
     
-    const showStrokeOrderBtn = document.getElementById('show-stroke-order-btn');
-    if (showStrokeOrderBtn) {
-      showStrokeOrderBtn.addEventListener('click', () => {
-        this.showStrokeOrder();
+    const animateStrokeBtn = document.getElementById('animate-stroke-btn');
+    if (animateStrokeBtn) {
+      animateStrokeBtn.addEventListener('click', () => {
+        this.animateStrokeOrder();
+      });
+    }
+    
+    // Audio buttons
+    const speakHanVietBtn = document.getElementById('speak-hanviet-btn');
+    if (speakHanVietBtn) {
+      speakHanVietBtn.addEventListener('click', () => {
+        if (this.currentCharacter && this.currentCharacter.hanViet) {
+          this.audioReader.speakHanViet(this.currentCharacter.hanViet);
+        }
+      });
+    }
+    
+    const speakPinyinBtn = document.getElementById('speak-pinyin-btn');
+    if (speakPinyinBtn) {
+      speakPinyinBtn.addEventListener('click', () => {
+        if (this.currentCharacter && this.currentCharacter.pinyin) {
+          this.audioReader.speakPinyin(this.currentCharacter.pinyin);
+        }
+      });
+    }
+    
+    const speakMeaningBtn = document.getElementById('speak-meaning-btn');
+    if (speakMeaningBtn) {
+      speakMeaningBtn.addEventListener('click', () => {
+        if (this.currentCharacter && this.currentCharacter.meaning) {
+          this.audioReader.speakVietnamese(this.currentCharacter.meaning);
+        }
+      });
+    }
+    
+    const speakAllBtn = document.getElementById('speak-all-btn');
+    if (speakAllBtn) {
+      speakAllBtn.addEventListener('click', () => {
+        if (this.currentCharacter) {
+          this.audioReader.speakCharacter(this.currentCharacter);
+        }
       });
     }
   }
@@ -480,6 +528,13 @@ class HanCoApp {
       traceBtn.classList.remove('active');
     }
     
+    // Auto read character info
+    setTimeout(() => {
+      if (this.audioReader && char.hanViet) {
+        this.audioReader.speakCharacter(char);
+      }
+    }, 500);
+    
     // Show practice section
     const practiceSection = document.getElementById('practice-section');
     if (practiceSection) {
@@ -538,16 +593,22 @@ class HanCoApp {
     }
   }
   
-  showStrokeOrder() {
-    if (!this.currentCharacter) return;
+  animateStrokeOrder() {
+    if (!this.currentCharacter) {
+      showToast('Vui lòng chọn chữ để xem thứ tự nét', 'warning');
+      return;
+    }
     
     if (this.canvasWriter) {
-      this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { showGuide: true });
-      const guideBtn = document.getElementById('guide-btn');
-      if (guideBtn) {
-        guideBtn.classList.add('active');
-      }
-      showToast('Đã hiển thị hướng dẫn thứ tự nét! ✨', 'info', 3000);
+      // Load character first
+      this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { showGuide: false });
+      
+      // Wait a bit then animate
+      setTimeout(() => {
+        this.canvasWriter.animateStrokeOrder(1, () => {
+          showToast('Đã xem xong thứ tự nét! Bây giờ bạn có thể viết theo! ✨', 'success', 4000);
+        });
+      }, 300);
     }
   }
   

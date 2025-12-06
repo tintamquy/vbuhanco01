@@ -245,6 +245,11 @@ export class CanvasWriter {
     if (typeof HanziWriter !== 'undefined') {
       const rect = this.canvas.getBoundingClientRect();
       
+      // Destroy existing instance if any
+      if (this.hanziWriter && this.hanziWriter.destroy) {
+        this.hanziWriter.destroy();
+      }
+      
       this.hanziWriter = HanziWriter.create(this.canvas, hanzi, {
         width: rect.width,
         height: rect.height,
@@ -252,16 +257,21 @@ export class CanvasWriter {
         showOutline: this.traceMode || this.options.showGuide || options.showGuide || false,
         showCharacter: false,
         strokeColor: this.options.guideColor,
-        outlineColor: this.traceMode ? 'rgba(139, 69, 19, 0.4)' : this.options.guideColor,
+        outlineColor: this.traceMode ? 'rgba(139, 69, 19, 0.5)' : this.options.guideColor,
         radicalColor: this.options.guideColor,
-        strokeWidth: this.traceMode ? 3 : 2
+        strokeWidth: this.traceMode ? 4 : 2,
+        strokeAnimationSpeed: 2
       });
       
-      // Nếu trace mode, hiển thị outline ngay
+      // Nếu trace mode, hiển thị outline ngay và rõ hơn
       if (this.traceMode && this.hanziWriter) {
         this.hanziWriter.showOutline({
           onComplete: () => {
             console.log('Outline shown for tracing');
+            // Redraw grid after outline
+            if (this.options.showGrid) {
+              this.drawGrid();
+            }
           }
         });
       }
@@ -271,6 +281,39 @@ export class CanvasWriter {
       console.warn('Hanzi Writer chưa được load');
       return null;
     }
+  }
+  
+  // Xem thứ tự nét với animation
+  animateStrokeOrder(speed = 1, onComplete) {
+    if (!this.hanziWriter) {
+      console.warn('Hanzi Writer chưa được load');
+      return;
+    }
+    
+    // Clear user strokes
+    this.clear();
+    
+    // Animate stroke order
+    this.hanziWriter.animateCharacter({
+      onComplete: () => {
+        if (onComplete) onComplete();
+      }
+    });
+  }
+  
+  // Hiển thị outline để tô
+  showTraceOutline() {
+    if (!this.hanziWriter) return;
+    
+    this.clear();
+    this.hanziWriter.showOutline({
+      onComplete: () => {
+        // Redraw grid
+        if (this.options.showGrid) {
+          this.drawGrid();
+        }
+      }
+    });
   }
   
   // Bật/tắt chế độ tô chữ

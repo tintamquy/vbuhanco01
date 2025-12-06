@@ -509,6 +509,40 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Audio Button */
+.btn-audio {
+  background: var(--secondary-color);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  vertical-align: middle;
+}
+
+.btn-audio:hover {
+  background: var(--primary-color);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-audio:active {
+  transform: scale(0.95);
+}
+
+.btn-small {
+  min-height: 40px;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  margin-top: 8px;
+}
+
 /* Badge */
 .badge {
   display: inline-block;
