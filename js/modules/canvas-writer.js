@@ -43,39 +43,69 @@ export class CanvasWriter {
   }
   
   initCanvas() {
-    // Responsive canvas với devicePixelRatio
-    const rect = this.canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    this.ctx.scale(dpr, dpr);
-    
-    // Set canvas display size
-    this.canvas.style.width = rect.width + 'px';
-    this.canvas.style.height = rect.height + 'px';
-    
-    // Initialize trace overlay canvas
-    if (this.traceCanvas && this.traceCtx) {
-      this.traceCanvas.width = rect.width * dpr;
-      this.traceCanvas.height = rect.height * dpr;
-      this.traceCtx.scale(dpr, dpr);
-      this.traceCanvas.style.width = rect.width + 'px';
-      this.traceCanvas.style.height = rect.height + 'px';
+    if (!this.canvas) {
+      console.error('Canvas element not found');
+      return;
     }
     
-    // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
-    if (this.traceCtx) {
-      this.traceCtx.clearRect(0, 0, this.traceCanvas.width / dpr, this.traceCanvas.height / dpr);
-    }
+    // Wait for canvas to be visible
+    const checkVisibility = () => {
+      const rect = this.canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        console.warn('Canvas not visible yet, retrying...');
+        setTimeout(checkVisibility, 100);
+        return;
+      }
+      
+      // Responsive canvas với devicePixelRatio
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = Math.min(rect.width, 400);
+      const displayHeight = displayWidth; // Square
+      
+      // Set canvas internal size
+      this.canvas.width = displayWidth * dpr;
+      this.canvas.height = displayHeight * dpr;
+      this.ctx.scale(dpr, dpr);
+      
+      // Set canvas display size
+      this.canvas.style.width = displayWidth + 'px';
+      this.canvas.style.height = displayHeight + 'px';
+      
+      console.log('Canvas initialized:', {
+        width: this.canvas.width,
+        height: this.canvas.height,
+        displayWidth,
+        displayHeight,
+        dpr
+      });
+      
+      // Initialize trace overlay canvas
+      if (this.traceCanvas && this.traceCtx) {
+        this.traceCanvas.width = displayWidth * dpr;
+        this.traceCanvas.height = displayHeight * dpr;
+        this.traceCtx.scale(dpr, dpr);
+        this.traceCanvas.style.width = displayWidth + 'px';
+        this.traceCanvas.style.height = displayHeight + 'px';
+      }
+      
+      // Clear canvas
+      this.ctx.clearRect(0, 0, displayWidth, displayHeight);
+      if (this.traceCtx) {
+        this.traceCtx.clearRect(0, 0, displayWidth, displayHeight);
+      }
+      
+      if (this.options.showGrid) {
+        this.drawGrid();
+      }
+    };
     
-    if (this.options.showGrid) {
-      this.drawGrid();
-    }
+    // Check immediately and retry if needed
+    setTimeout(checkVisibility, 50);
   }
   
   drawGrid() {
+    if (!this.canvas || !this.ctx) return;
+    
     const size = this.canvas.width / (window.devicePixelRatio || 1);
     const ctx = this.ctx;
     

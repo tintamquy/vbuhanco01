@@ -179,12 +179,24 @@ class HanCoApp {
   }
   
   setupCanvas() {
+    // Don't setup canvas immediately - wait until practice section is shown
+    // Canvas will be initialized when startPractice is called
+    console.log('Canvas setup deferred until practice section is shown');
+  }
+  
+  initCanvas() {
     const canvas = document.getElementById('practice-canvas');
-    if (canvas) {
+    if (canvas && !this.canvasWriter) {
+      console.log('Initializing canvas writer...');
       this.canvasWriter = new CanvasWriter('practice-canvas', {
         showGrid: true,
         smoothing: true
       });
+      console.log('Canvas writer initialized:', this.canvasWriter);
+    } else if (this.canvasWriter) {
+      console.log('Canvas writer already initialized');
+    } else {
+      console.warn('Canvas element not found');
     }
   }
   
@@ -510,14 +522,25 @@ class HanCoApp {
     document.getElementById('meaning-display').textContent = char.meaning || '';
     document.getElementById('practice-title').textContent = `Luyện viết: ${char.hanzi}`;
     
-    // Load character in canvas - wait a bit for canvas to be ready
+    // Initialize canvas if not already done
+    if (!this.canvasWriter) {
+      this.initCanvas();
+    }
+    
+    // Wait for canvas to be ready and visible
     setTimeout(() => {
       if (this.canvasWriter) {
         this.canvasWriter.loadCharacter(hanzi, { showGuide: false, traceMode: false });
+        // Update canvas label
+        const canvasLabel = document.getElementById('canvas-label');
+        if (canvasLabel) {
+          canvasLabel.textContent = 'Vẽ chữ ở đây';
+        }
       } else {
-        console.warn('Canvas writer not ready yet');
+        console.error('Canvas writer failed to initialize');
+        showToast('Lỗi khởi tạo canvas. Vui lòng reload trang.', 'error');
       }
-    }, 100);
+    }, 200);
     
     // Reset trace button state
     const traceBtn = document.getElementById('trace-btn');

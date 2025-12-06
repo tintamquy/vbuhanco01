@@ -446,9 +446,13 @@ a:hover {
   position: relative;
   margin: 0 auto var(--spacing-md);
   max-width: 500px;
+  min-height: 400px;
   background: #FAFAFA;
   border-radius: var(--border-radius);
   padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .canvas-label {
@@ -460,41 +464,53 @@ a:hover {
   font-size: 1.2rem;
   pointer-events: none;
   opacity: 0.5;
-  z-index: 1;
+  z-index: 3;
   transition: opacity 0.3s;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 8px;
 }
 
-.canvas-container.has-content .canvas-label {
+.canvas-container.has-content .canvas-label,
+.canvas-container:has(canvas:not(:empty)) .canvas-label {
   opacity: 0;
 }
 
 #practice-canvas {
-  width: 100%;
-  max-width: 400px;
+  width: 100% !important;
+  max-width: 400px !important;
+  height: auto !important;
   aspect-ratio: 1;
+  min-height: 300px;
   border: 4px solid var(--primary-color);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  background: var(--surface);
-  display: block;
+  background: #FFFFFF !important;
+  display: block !important;
   margin: 0 auto;
   touch-action: none;
   cursor: crosshair;
   position: relative;
   z-index: 2;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 #trace-overlay-canvas {
   position: absolute;
   top: var(--spacing-md);
   left: var(--spacing-md);
-  width: calc(100% - 32px);
-  max-width: 400px;
+  width: calc(100% - 32px) !important;
+  max-width: 400px !important;
+  height: auto !important;
   aspect-ratio: 1;
+  min-height: 300px;
   pointer-events: none;
   z-index: 1;
   opacity: 0;
   transition: opacity 0.3s;
+  display: block !important;
+  visibility: visible !important;
 }
 
 #trace-overlay-canvas.active {
