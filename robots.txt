@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://vbuhanco01.pages.dev/sitemap.xml
+
+# Disallow service worker and manifest
+Disallow: /sw.js
+Disallow: /manifest.json
+
