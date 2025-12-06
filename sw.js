@@ -1,9 +1,11 @@
 // Service Worker cho PWA - Học Hán Cổ
-const CACHE_NAME = 'han-co-v1';
+const CACHE_NAME = 'han-co-v2'; // Update version to force refresh
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/robots.txt',
+  '/sitemap.xml',
   '/css/style.css',
   '/css/components.css',
   '/css/animations.css',
@@ -16,8 +18,12 @@ const urlsToCache = [
   '/js/modules/stroke-recognition.js',
   '/js/modules/quiz-engine.js',
   '/js/modules/progress-tracker.js',
+  '/js/modules/audio-reader.js',
   '/js/utils/storage.js',
   '/js/utils/helpers.js',
+  '/assets/previewshare.jpg',
+  '/assets/icon-192.png',
+  '/assets/icon-512.png',
   'https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css'
 ];
@@ -50,29 +56,42 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // Force claim all clients
+      return self.clients.claim();
     })
   );
-  return self.clients.claim();
 });
 
-// Fetch event - Serve from cache, fallback to network
+// Fetch event - Network first, fallback to cache
 self.addEventListener('fetch', event => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Skip chrome-extension and other protocols
+  if (!event.request.url.startsWith('http')) return;
+  
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request).then(fetchResponse => {
-          // Cache new resources
-          if (fetchResponse && fetchResponse.status === 200) {
-            const responseToCache = fetchResponse.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseToCache);
-            });
+    fetch(event.request)
+      .then(fetchResponse => {
+        // Cache successful responses
+        if (fetchResponse && fetchResponse.status === 200) {
+          const responseToCache = fetchResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return fetchResponse;
+      })
+      .catch(() => {
+        // Network failed, try cache
+        return caches.match(event.request).then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
           }
-          return fetchResponse;
-        }).catch(() => {
-          // Offline fallback
-          if (event.request.destination === 'document') {
+          // Fallback to index.html for navigation requests
+          if (event.request.destination === 'document' || 
+              event.request.mode === 'navigate') {
             return caches.match('/index.html');
           }
         });
