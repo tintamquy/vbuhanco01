@@ -188,9 +188,10 @@
                 </div>
 
                 <div class="quick-start">
-                    <h3>Bắt đầu học</h3>
-                    <button class="btn btn-primary" data-action="start-lesson" data-lesson="1">
-                        Bắt đầu với Bài 1: Các Nét Căn Bản
+                    <h3>🎉 Bắt đầu học ngay!</h3>
+                    <p class="quick-start-desc">Chọn bài học để bắt đầu luyện viết chữ Hán Cổ</p>
+                    <button class="btn btn-primary btn-large btn-kid-friendly" data-action="start-lesson" data-lesson="1">
+                        ✏️ Bắt đầu với Bài 1: Các Nét Căn Bản
                     </button>
                 </div>
             </div>
@@ -258,9 +259,18 @@
             <div class="canvas-container">
                 <canvas id="practice-canvas"></canvas>
                 <div class="canvas-controls">
-                    <button class="btn btn-icon" id="clear-btn" title="Xóa">🗑️</button>
-                    <button class="btn btn-icon" id="undo-btn" title="Hoàn tác">↶</button>
-                    <button class="btn btn-icon" id="guide-btn" title="Hiện hướng dẫn">👁️</button>
+                    <button class="btn btn-icon btn-kid-friendly" id="trace-btn" title="Tô chữ (dễ nhớ)">
+                        <span class="btn-icon-text">✏️ Tô chữ</span>
+                    </button>
+                    <button class="btn btn-icon btn-kid-friendly" id="guide-btn" title="Hiện hướng dẫn">
+                        <span class="btn-icon-text">👁️ Hướng dẫn</span>
+                    </button>
+                    <button class="btn btn-icon btn-kid-friendly" id="undo-btn" title="Hoàn tác">
+                        <span class="btn-icon-text">↶ Hoàn tác</span>
+                    </button>
+                    <button class="btn btn-icon btn-kid-friendly" id="clear-btn" title="Xóa hết">
+                        <span class="btn-icon-text">🗑️ Xóa</span>
+                    </button>
                 </div>
             </div>
 
@@ -269,8 +279,15 @@
             </div>
 
             <div class="practice-controls">
-                <button class="btn btn-primary" id="start-quiz-btn">Bắt đầu Quiz</button>
-                <button class="btn btn-secondary" id="show-stroke-order-btn">Xem thứ tự nét</button>
+                <button class="btn btn-primary btn-large" id="start-quiz-btn">🎯 Bắt đầu Quiz</button>
+                <button class="btn btn-secondary btn-large" id="show-stroke-order-btn">📖 Xem thứ tự nét</button>
+            </div>
+            
+            <div class="practice-tips">
+                <div class="tip-card">
+                    <span class="tip-icon">💡</span>
+                    <p><strong>Mẹo:</strong> Dùng ngón tay hoặc bút stylus để vẽ chữ. Bấm nút "Tô chữ" để xem đường nét mờ và tô theo!</p>
+                </div>
             </div>
         </section>
 

@@ -102,6 +102,22 @@ class HanCoApp {
       guideBtn.addEventListener('click', () => {
         if (this.canvasWriter) {
           this.canvasWriter.toggleGuide();
+          guideBtn.classList.toggle('active');
+        }
+      });
+    }
+    
+    const traceBtn = document.getElementById('trace-btn');
+    if (traceBtn) {
+      traceBtn.addEventListener('click', () => {
+        if (this.canvasWriter) {
+          const isTraceMode = this.canvasWriter.toggleTraceMode();
+          traceBtn.classList.toggle('active', isTraceMode);
+          if (isTraceMode) {
+            showToast('Đã bật chế độ tô chữ! Tô theo đường nét mờ để dễ nhớ nhé! 🎨', 'info', 4000);
+          } else {
+            showToast('Đã tắt chế độ tô chữ', 'info');
+          }
         }
       });
     }
@@ -455,14 +471,22 @@ class HanCoApp {
     
     // Load character in canvas
     if (this.canvasWriter) {
-      this.canvasWriter.loadCharacter(hanzi, { showGuide: false });
+      this.canvasWriter.loadCharacter(hanzi, { showGuide: false, traceMode: false });
+    }
+    
+    // Reset trace button state
+    const traceBtn = document.getElementById('trace-btn');
+    if (traceBtn) {
+      traceBtn.classList.remove('active');
     }
     
     // Show practice section
     const practiceSection = document.getElementById('practice-section');
     if (practiceSection) {
       practiceSection.style.display = 'block';
-      practiceSection.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        practiceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
     
     // Hide current page
@@ -470,6 +494,9 @@ class HanCoApp {
     if (currentPage) {
       currentPage.classList.remove('active');
     }
+    
+    // Show helpful tip
+    showToast('💡 Mẹo: Bấm nút "Tô chữ" để xem đường nét mờ và tô theo!', 'info', 5000);
   }
   
   hidePracticeSection() {
@@ -516,7 +543,11 @@ class HanCoApp {
     
     if (this.canvasWriter) {
       this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { showGuide: true });
-      showToast('Đã hiển thị hướng dẫn', 'info');
+      const guideBtn = document.getElementById('guide-btn');
+      if (guideBtn) {
+        guideBtn.classList.add('active');
+      }
+      showToast('Đã hiển thị hướng dẫn thứ tự nét! ✨', 'info', 3000);
     }
   }
   

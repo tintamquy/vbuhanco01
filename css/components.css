@@ -65,6 +65,50 @@
   transform: scale(0.9);
 }
 
+/* Kid-friendly buttons */
+.btn-kid-friendly {
+  min-height: 56px;
+  min-width: 56px;
+  font-size: 1.125rem;
+  padding: 14px 20px;
+  border-radius: 28px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+}
+
+.btn-kid-friendly:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-kid-friendly:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-large {
+  min-height: 60px;
+  font-size: 1.25rem;
+  padding: 16px 32px;
+  border-radius: 30px;
+}
+
+.btn-icon-text {
+  font-size: 0.9rem;
+  margin-left: 4px;
+}
+
+@media (max-width: 767px) {
+  .btn-icon-text {
+    display: none;
+  }
+  
+  .btn-kid-friendly {
+    min-width: 60px;
+    min-height: 60px;
+    font-size: 1.5rem;
+  }
+}
+
 /* Cards */
 .card {
   background: var(--surface);
@@ -419,6 +463,34 @@
 
 .toast-info {
   background: var(--info-color);
+}
+
+/* Practice Tips */
+.practice-tips {
+  margin-top: var(--spacing-lg);
+  padding: 0 var(--spacing-md);
+}
+
+.tip-card {
+  background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  border-left: 4px solid #FFC107;
+}
+
+.tip-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.tip-card p {
+  margin: 0;
+  color: #5D4037;
+  line-height: 1.6;
 }
 
 /* Loading Spinner */

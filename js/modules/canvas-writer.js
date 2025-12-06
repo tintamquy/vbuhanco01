@@ -13,14 +13,15 @@ export class CanvasWriter {
     this.canvas.style.touchAction = 'none';
     
     this.options = {
-      strokeWidth: 8,
+      strokeWidth: 12, // Tăng độ dày nét cho dễ nhìn
       strokeColor: '#2C1810',
-      guideColor: 'rgba(139, 69, 19, 0.2)',
+      guideColor: 'rgba(139, 69, 19, 0.3)',
       correctColor: '#4CAF50',
       wrongColor: '#F44336',
       showGrid: true,
       smoothing: true,
       showGuide: false,
+      traceMode: false, // Chế độ tô chữ
       ...options
     };
     
@@ -28,9 +29,10 @@ export class CanvasWriter {
     this.currentStroke = [];
     this.allStrokes = [];
     this.targetCharacter = null;
-    this.hanziWriter = null;
+    this.hanziWriter = null; // Fix typo
     this.quizMode = false;
     this.currentStrokeIndex = 0;
+    this.traceMode = false;
     
     this.initCanvas();
     this.bindEvents();
@@ -133,29 +135,34 @@ export class CanvasWriter {
   
   getTouchPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const touch = e.touches[0] || e.changedTouches[0];
+    const touch = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : null);
+    if (!touch) return null;
+    
+    const dpr = window.devicePixelRatio || 1;
     return {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top
+      x: (touch.clientX - rect.left) * (rect.width / (this.canvas.width / dpr)),
+      y: (touch.clientY - rect.top) * (rect.height / (this.canvas.height / dpr))
     };
   }
   
   getMousePos(e) {
     const rect = this.canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: (e.clientX - rect.left) * (rect.width / (this.canvas.width / dpr)),
+      y: (e.clientY - rect.top) * (rect.height / (this.canvas.height / dpr))
     };
   }
   
   handleStart(pos) {
+    if (!pos) return;
     this.isDrawing = true;
     this.currentStroke = [pos];
     this.drawPoint(pos);
   }
   
   handleMove(pos) {
-    if (!this.isDrawing) return;
+    if (!this.isDrawing || !pos) return;
     
     this.currentStroke.push(pos);
     this.drawStroke(this.currentStroke);
@@ -229,6 +236,7 @@ export class CanvasWriter {
   loadCharacter(hanzi, options = {}) {
     this.targetCharacter = hanzi;
     this.quizMode = options.quizMode || false;
+    this.traceMode = options.traceMode || false;
     
     // Clear canvas
     this.clear();
@@ -241,18 +249,37 @@ export class CanvasWriter {
         width: rect.width,
         height: rect.height,
         padding: 20,
-        showOutline: this.options.showGuide || options.showGuide || false,
+        showOutline: this.traceMode || this.options.showGuide || options.showGuide || false,
         showCharacter: false,
         strokeColor: this.options.guideColor,
-        outlineColor: this.options.guideColor,
-        radicalColor: this.options.guideColor
+        outlineColor: this.traceMode ? 'rgba(139, 69, 19, 0.4)' : this.options.guideColor,
+        radicalColor: this.options.guideColor,
+        strokeWidth: this.traceMode ? 3 : 2
       });
+      
+      // Nếu trace mode, hiển thị outline ngay
+      if (this.traceMode && this.hanziWriter) {
+        this.hanziWriter.showOutline({
+          onComplete: () => {
+            console.log('Outline shown for tracing');
+          }
+        });
+      }
       
       return this.hanziWriter;
     } else {
       console.warn('Hanzi Writer chưa được load');
       return null;
     }
+  }
+  
+  // Bật/tắt chế độ tô chữ
+  toggleTraceMode() {
+    this.traceMode = !this.traceMode;
+    if (this.targetCharacter) {
+      this.loadCharacter(this.targetCharacter, { traceMode: this.traceMode });
+    }
+    return this.traceMode;
   }
   
   startQuiz(onMistake, onCorrectStroke, onComplete) {
@@ -316,6 +343,9 @@ export class CanvasWriter {
       this.hanziWriter.setOptions({
         showOutline: this.options.showGuide
       });
+      if (this.options.showGuide) {
+        this.hanziWriter.showOutline();
+      }
     }
     this.clear();
     this.redrawStrokes();
