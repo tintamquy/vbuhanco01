@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Ứng dụng học viết chữ Hán Cổ với 214 bộ thủ và Lục thư đầy đủ - Học viện Phật giáo Việt Nam">
+    <meta name="theme-color" content="#8B4513">
+    <title>Học Hán Cổ - Học viện Phật giáo VN</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <h1 class="app-title">📚 Học Hán Cổ</h1>
+        <button class="btn-icon" id="menu-toggle" aria-label="Menu">
+            <span class="icon">☰</span>
+        </button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <button class="btn-icon" id="sidebar-close" aria-label="Đóng menu">✕</button>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="#home" class="nav-link active" data-page="home">🏠 Trang chủ</a></li>
+            <li><a href="#lesson1" class="nav-link" data-page="lesson1">📖 Bài 1: Các Nét Căn Bản</a></li>
+            <li><a href="#lesson2" class="nav-link" data-page="lesson2">📖 Bài 2: Bút Thuận</a></li>
+            <li><a href="#lesson3" class="nav-link" data-page="lesson3">📖 Bài 3: 214 Bộ Thủ</a></li>
+            <li><a href="#lesson4" class="nav-link" data-page="lesson4">📖 Bài 4: Lục Thư</a></li>
+            <li><a href="#review" class="nav-link" data-page="review">🔄 Ôn tập tổng hợp</a></li>
+            <li><a href="#stats" class="nav-link" data-page="stats">📊 Thống kê tiến độ</a></li>
+        </ul>
+    </nav>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <section id="page-home" class="page active">
+            <div class="welcome-section">
+                <h2>Chào mừng đến với Học Hán Cổ</h2>
+                <p class="subtitle">Lộ trình học viết chữ Hán Cổ theo Học viện Phật giáo Việt Nam</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">✍️</div>
+                        <h3>Luyện Viết</h3>
+                        <p>Vẽ chữ trên canvas với nhận diện nét tự động</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <h3>214 Bộ Thủ</h3>
+                        <p>Học đầy đủ 214 bộ thủ với giải thích chi tiết</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Quiz & Test</h3>
+                        <p>Kiểm tra kiến thức với nhiều dạng bài tập</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Theo Dõi Tiến Độ</h3>
+                        <p>Lưu tiến độ học tập trên thiết bị của bạn</p>
+                    </div>
+                </div>
+
+                <div class="quick-start">
+                    <h3>Bắt đầu học</h3>
+                    <button class="btn btn-primary" data-action="start-lesson" data-lesson="1">
+                        Bắt đầu với Bài 1: Các Nét Căn Bản
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lesson Pages -->
+        <section id="page-lesson1" class="page">
+            <div class="lesson-header">
+                <h2>Bài 1: Các Nét Căn Bản</h2>
+                <p class="lesson-description">Học 8 nét căn bản của chữ Hán</p>
+            </div>
+            <div class="lesson-content" id="lesson1-content">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <section id="page-lesson2" class="page">
+            <div class="lesson-header">
+                <h2>Bài 2: Bút Thuận</h2>
+                <p class="lesson-description">7 quy tắc viết chữ Hán đúng thứ tự</p>
+            </div>
+            <div class="lesson-content" id="lesson2-content">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <section id="page-lesson3" class="page">
+            <div class="lesson-header">
+                <h2>Bài 3: 214 Bộ Thủ</h2>
+                <p class="lesson-description">Học đầy đủ 214 bộ thủ cơ bản</p>
+            </div>
+            <div class="lesson-content" id="lesson3-content">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <section id="page-lesson4" class="page">
+            <div class="lesson-header">
+                <h2>Bài 4: Lục Thư</h2>
+                <p class="lesson-description">6 phương pháp cấu tạo chữ Hán</p>
+            </div>
+            <div class="lesson-content" id="lesson4-content">
+                <!-- Dynamic content -->
+            </div>
+        </section>
+
+        <!-- Practice Canvas Section -->
+        <section class="practice-section" id="practice-section" style="display: none;">
+            <div class="practice-header">
+                <button class="btn btn-secondary" id="back-btn">← Quay lại</button>
+                <h3 id="practice-title">Luyện viết</h3>
+            </div>
+            
+            <div class="character-info" id="character-info">
+                <div class="char-display">
+                    <span class="hanzi" id="hanzi-display">一</span>
+                    <div class="char-details">
+                        <p><strong>Hán Việt:</strong> <span id="hanviet-display">nhất</span></p>
+                        <p><strong>Pinyin:</strong> <span id="pinyin-display">yī</span></p>
+                        <p><strong>Nghĩa:</strong> <span id="meaning-display">Số một</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="practice-canvas"></canvas>
+                <div class="canvas-controls">
+                    <button class="btn btn-icon" id="clear-btn" title="Xóa">🗑️</button>
+                    <button class="btn btn-icon" id="undo-btn" title="Hoàn tác">↶</button>
+                    <button class="btn btn-icon" id="guide-btn" title="Hiện hướng dẫn">👁️</button>
+                </div>
+            </div>
+
+            <div class="stroke-counter" id="stroke-counter">
+                <!-- Dynamic stroke dots -->
+            </div>
+
+            <div class="practice-controls">
+                <button class="btn btn-primary" id="start-quiz-btn">Bắt đầu Quiz</button>
+                <button class="btn btn-secondary" id="show-stroke-order-btn">Xem thứ tự nét</button>
+            </div>
+        </section>
+
+        <!-- Review Page -->
+        <section id="page-review" class="page">
+            <div class="review-header">
+                <h2>Ôn tập tổng hợp</h2>
+            </div>
+            <div class="review-content" id="review-content">
+                <!-- Dynamic review content -->
+            </div>
+        </section>
+
+        <!-- Stats Page -->
+        <section id="page-stats" class="page">
+            <div class="stats-header">
+                <h2>Thống kê tiến độ</h2>
+            </div>
+            <div class="stats-content" id="stats-content">
+                <!-- Dynamic stats -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Celebration Modal -->
+    <div class="celebration" id="celebration" style="display: none;">
+        <div class="celebration-content">
+            <h2>🎉 Xuất sắc! 🎉</h2>
+            <p>Bạn đã hoàn thành bài tập!</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/js/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered:', reg))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
+

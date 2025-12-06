@@ -1,0 +1,362 @@
+// Canvas Writer Module - Vẽ chữ Hán với touch optimization
+export class CanvasWriter {
+  constructor(canvasId, options = {}) {
+    this.canvas = document.getElementById(canvasId);
+    if (!this.canvas) {
+      console.error(`Canvas với id "${canvasId}" không tìm thấy`);
+      return;
+    }
+    
+    this.ctx = this.canvas.getContext('2d');
+    
+    // Touch optimization - ngăn scroll khi vẽ
+    this.canvas.style.touchAction = 'none';
+    
+    this.options = {
+      strokeWidth: 8,
+      strokeColor: '#2C1810',
+      guideColor: 'rgba(139, 69, 19, 0.2)',
+      correctColor: '#4CAF50',
+      wrongColor: '#F44336',
+      showGrid: true,
+      smoothing: true,
+      showGuide: false,
+      ...options
+    };
+    
+    this.isDrawing = false;
+    this.currentStroke = [];
+    this.allStrokes = [];
+    this.targetCharacter = null;
+    this.hanziWriter = null;
+    this.quizMode = false;
+    this.currentStrokeIndex = 0;
+    
+    this.initCanvas();
+    this.bindEvents();
+  }
+  
+  initCanvas() {
+    // Responsive canvas với devicePixelRatio
+    const rect = this.canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.scale(dpr, dpr);
+    
+    // Set canvas display size
+    this.canvas.style.width = rect.width + 'px';
+    this.canvas.style.height = rect.height + 'px';
+    
+    // Clear canvas
+    this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+    
+    if (this.options.showGrid) {
+      this.drawGrid();
+    }
+  }
+  
+  drawGrid() {
+    const size = this.canvas.width / (window.devicePixelRatio || 1);
+    const ctx = this.ctx;
+    
+    ctx.save();
+    ctx.strokeStyle = '#E0E0E0';
+    ctx.lineWidth = 1;
+    
+    // Vertical center line
+    ctx.beginPath();
+    ctx.moveTo(size / 2, 0);
+    ctx.lineTo(size / 2, size);
+    ctx.stroke();
+    
+    // Horizontal center line
+    ctx.beginPath();
+    ctx.moveTo(0, size / 2);
+    ctx.lineTo(size, size / 2);
+    ctx.stroke();
+    
+    // Diagonal lines (faint)
+    ctx.strokeStyle = '#F0F0F0';
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(size, size);
+    ctx.moveTo(size, 0);
+    ctx.lineTo(0, size);
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+  
+  bindEvents() {
+    // Touch events với passive: false để preventDefault
+    this.canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      this.handleStart(this.getTouchPos(e));
+    }, { passive: false });
+    
+    this.canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      this.handleMove(this.getTouchPos(e));
+    }, { passive: false });
+    
+    this.canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      this.handleEnd();
+    }, { passive: false });
+    
+    // Mouse events (for desktop testing)
+    this.canvas.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      this.handleStart(this.getMousePos(e));
+    });
+    
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (this.isDrawing) {
+        e.preventDefault();
+        this.handleMove(this.getMousePos(e));
+      }
+    });
+    
+    this.canvas.addEventListener('mouseup', (e) => {
+      e.preventDefault();
+      this.handleEnd();
+    });
+    
+    this.canvas.addEventListener('mouseleave', () => {
+      if (this.isDrawing) {
+        this.handleEnd();
+      }
+    });
+  }
+  
+  getTouchPos(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const touch = e.touches[0] || e.changedTouches[0];
+    return {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    };
+  }
+  
+  getMousePos(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }
+  
+  handleStart(pos) {
+    this.isDrawing = true;
+    this.currentStroke = [pos];
+    this.drawPoint(pos);
+  }
+  
+  handleMove(pos) {
+    if (!this.isDrawing) return;
+    
+    this.currentStroke.push(pos);
+    this.drawStroke(this.currentStroke);
+  }
+  
+  handleEnd() {
+    if (!this.isDrawing) return;
+    
+    this.isDrawing = false;
+    
+    // Smooth stroke nếu bật
+    if (this.options.smoothing && this.currentStroke.length > 2) {
+      this.currentStroke = this.smoothStroke(this.currentStroke);
+    }
+    
+    // Lưu stroke
+    this.allStrokes.push([...this.currentStroke]);
+    
+    // Check stroke nếu đang ở quiz mode
+    if (this.quizMode && this.hanziWriter) {
+      // Hanzi Writer sẽ tự động check
+    }
+    
+    this.currentStroke = [];
+  }
+  
+  drawPoint(pos) {
+    const ctx = this.ctx;
+    ctx.fillStyle = this.options.strokeColor;
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, this.options.strokeWidth / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  drawStroke(stroke) {
+    if (stroke.length < 2) return;
+    
+    const ctx = this.ctx;
+    ctx.strokeStyle = this.options.strokeColor;
+    ctx.lineWidth = this.options.strokeWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    ctx.beginPath();
+    ctx.moveTo(stroke[0].x, stroke[0].y);
+    
+    for (let i = 1; i < stroke.length; i++) {
+      ctx.lineTo(stroke[i].x, stroke[i].y);
+    }
+    
+    ctx.stroke();
+  }
+  
+  smoothStroke(stroke) {
+    // Simple averaging smoothing
+    if (stroke.length < 3) return stroke;
+    
+    const smoothed = [stroke[0]];
+    
+    for (let i = 1; i < stroke.length - 1; i++) {
+      smoothed.push({
+        x: (stroke[i - 1].x + stroke[i].x + stroke[i + 1].x) / 3,
+        y: (stroke[i - 1].y + stroke[i].y + stroke[i + 1].y) / 3
+      });
+    }
+    
+    smoothed.push(stroke[stroke.length - 1]);
+    return smoothed;
+  }
+  
+  loadCharacter(hanzi, options = {}) {
+    this.targetCharacter = hanzi;
+    this.quizMode = options.quizMode || false;
+    
+    // Clear canvas
+    this.clear();
+    
+    // Load Hanzi Writer
+    if (typeof HanziWriter !== 'undefined') {
+      const rect = this.canvas.getBoundingClientRect();
+      
+      this.hanziWriter = HanziWriter.create(this.canvas, hanzi, {
+        width: rect.width,
+        height: rect.height,
+        padding: 20,
+        showOutline: this.options.showGuide || options.showGuide || false,
+        showCharacter: false,
+        strokeColor: this.options.guideColor,
+        outlineColor: this.options.guideColor,
+        radicalColor: this.options.guideColor
+      });
+      
+      return this.hanziWriter;
+    } else {
+      console.warn('Hanzi Writer chưa được load');
+      return null;
+    }
+  }
+  
+  startQuiz(onMistake, onCorrectStroke, onComplete) {
+    this.clear();
+    this.quizMode = true;
+    this.currentStrokeIndex = 0;
+    
+    if (this.hanziWriter) {
+      this.hanziWriter.quiz({
+        onMistake: (strokeData) => {
+          this.showFeedback(false);
+          if (onMistake) onMistake(strokeData);
+        },
+        onCorrectStroke: (strokeData) => {
+          this.showFeedback(true);
+          this.currentStrokeIndex++;
+          if (onCorrectStroke) onCorrectStroke(strokeData, this.currentStrokeIndex);
+        },
+        onComplete: (summaryData) => {
+          this.showCompletionCelebration();
+          this.quizMode = false;
+          if (onComplete) onComplete(summaryData);
+        }
+      });
+    }
+  }
+  
+  showFeedback(isCorrect) {
+    const rect = this.canvas.getBoundingClientRect();
+    const size = this.canvas.width / (window.devicePixelRatio || 1);
+    const color = isCorrect ? this.options.correctColor : this.options.wrongColor;
+    
+    // Visual feedback - border flash
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 6;
+    this.ctx.strokeRect(5, 5, size - 10, size - 10);
+    
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(isCorrect ? 50 : 100);
+    }
+    
+    // Reset sau 300ms
+    setTimeout(() => {
+      this.initCanvas();
+      this.redrawStrokes();
+    }, 300);
+  }
+  
+  showCompletionCelebration() {
+    // Trigger celebration event
+    const event = new CustomEvent('characterComplete', {
+      detail: { character: this.targetCharacter }
+    });
+    document.dispatchEvent(event);
+  }
+  
+  toggleGuide() {
+    this.options.showGuide = !this.options.showGuide;
+    if (this.hanziWriter) {
+      this.hanziWriter.setOptions({
+        showOutline: this.options.showGuide
+      });
+    }
+    this.clear();
+    this.redrawStrokes();
+  }
+  
+  clear() {
+    const dpr = window.devicePixelRatio || 1;
+    this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+    this.allStrokes = [];
+    this.currentStroke = [];
+    this.initCanvas();
+  }
+  
+  redrawStrokes() {
+    this.allStrokes.forEach(stroke => {
+      if (stroke.length > 0) {
+        this.drawStroke(stroke);
+      }
+    });
+  }
+  
+  undo() {
+    if (this.allStrokes.length > 0) {
+      this.allStrokes.pop();
+      this.clear();
+      this.redrawStrokes();
+    }
+  }
+  
+  getStrokeCount() {
+    return this.allStrokes.length;
+  }
+  
+  // Resize handler
+  handleResize() {
+    this.initCanvas();
+    if (this.hanziWriter) {
+      const rect = this.canvas.getBoundingClientRect();
+      this.hanziWriter.setDimensions(rect.width, rect.height);
+    }
+    this.redrawStrokes();
+  }
+}
+
