@@ -109,39 +109,21 @@ class HanCoApp {
       });
     }
     
-    const traceBtn = document.getElementById('trace-btn');
-    if (traceBtn) {
-      traceBtn.addEventListener('click', () => {
-        if (!this.currentCharacter) {
-          showToast('Vui lòng chọn chữ để luyện tập', 'warning');
-          return;
-        }
-        
-        if (!this.canvasWriter) {
-          showToast('Đang khởi tạo canvas...', 'info');
-          setTimeout(() => {
-            if (this.canvasWriter) {
-              this.canvasWriter.toggleTraceMode();
-            }
-          }, 500);
-          return;
-        }
-        
-        const isTraceMode = this.canvasWriter.toggleTraceMode();
-        traceBtn.classList.toggle('active', isTraceMode);
-        
-        if (isTraceMode) {
-          // Show trace outline after a delay
-          setTimeout(() => {
-            if (this.canvasWriter) {
-              this.canvasWriter.showTraceOutline();
-            }
-          }, 200);
-          showToast('✨ Đã bật chế độ tô chữ! Tô theo đường nét mờ để dễ nhớ nhé! 🎨', 'success', 5000);
-        } else {
-          showToast('Đã tắt chế độ tô chữ', 'info');
-        }
-      });
+    // Practice mode buttons
+    const modeFreeBtn = document.getElementById('mode-free-btn');
+    const modeTraceBtn = document.getElementById('mode-trace-btn');
+    const modeQuizBtn = document.getElementById('mode-quiz-btn');
+    
+    if (modeFreeBtn) {
+      modeFreeBtn.addEventListener('click', () => this.switchPracticeMode('free'));
+    }
+    
+    if (modeTraceBtn) {
+      modeTraceBtn.addEventListener('click', () => this.switchPracticeMode('trace'));
+    }
+    
+    if (modeQuizBtn) {
+      modeQuizBtn.addEventListener('click', () => this.switchPracticeMode('quiz'));
     }
     
     const startQuizBtn = document.getElementById('start-quiz-btn');
@@ -651,6 +633,76 @@ class HanCoApp {
       this.progressTracker.markCharacterLearned(this.currentCharacter.hanzi, {
         mastery: 100
       });
+    }
+  }
+  
+  // Switch practice mode
+  switchPracticeMode(mode) {
+    // Update button states
+    const modeButtons = document.querySelectorAll('.btn-mode');
+    modeButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    
+    // Update tips
+    const tips = document.querySelectorAll('.tip-card');
+    tips.forEach(tip => tip.style.display = 'none');
+    const activeTip = document.getElementById(`tip-${mode}`);
+    if (activeTip) {
+      activeTip.style.display = 'block';
+    }
+    
+    // Update canvas label
+    const canvasLabel = document.getElementById('canvas-label');
+    const canvasContainer = document.querySelector('.canvas-container');
+    
+    if (!this.currentCharacter) {
+      showToast('Vui lòng chọn chữ để luyện tập', 'warning');
+      return;
+    }
+    
+    if (!this.canvasWriter) {
+      showToast('Đang khởi tạo canvas...', 'info');
+      setTimeout(() => this.switchPracticeMode(mode), 500);
+      return;
+    }
+    
+    switch(mode) {
+      case 'free':
+        // Free mode - clear and ready to draw
+        this.canvasWriter.clear();
+        this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: false });
+        if (canvasLabel) canvasLabel.textContent = 'Vẽ chữ tự do ở đây';
+        if (canvasContainer) canvasContainer.classList.remove('has-content');
+        showToast('Chế độ Tự do: Vẽ chữ tự do trên canvas', 'info', 3000);
+        break;
+        
+      case 'trace':
+        // Trace mode - show outline
+        this.canvasWriter.clear();
+        this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: true });
+        setTimeout(() => {
+          if (this.canvasWriter) {
+            this.canvasWriter.showTraceOutline();
+            // Show trace overlay
+            const traceCanvas = document.getElementById('trace-overlay-canvas');
+            if (traceCanvas) {
+              traceCanvas.classList.add('active');
+            }
+          }
+        }, 300);
+        if (canvasLabel) canvasLabel.textContent = 'Tô theo đường nét mờ';
+        if (canvasContainer) canvasContainer.classList.add('has-content');
+        showToast('✨ Chế độ Tô chữ: Tô theo đường nét mờ để luyện tập! 🎨', 'success', 5000);
+        break;
+        
+      case 'quiz':
+        // Quiz mode
+        this.startQuiz();
+        if (canvasLabel) canvasLabel.textContent = 'Vẽ theo thứ tự nét';
+        if (canvasContainer) canvasContainer.classList.add('has-content');
+        showToast('Chế độ Quiz: Vẽ chữ theo đúng thứ tự nét!', 'info', 3000);
+        break;
     }
   }
 }

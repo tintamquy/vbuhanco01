@@ -536,6 +536,26 @@
   transform: scale(0.95);
 }
 
+.btn-audio-small {
+  background: var(--secondary-color);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.btn-audio-small:hover {
+  background: var(--primary-color);
+  transform: scale(1.1);
+}
+
 .btn-small {
   min-height: 40px;
   font-size: 0.9rem;

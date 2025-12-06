@@ -247,55 +247,100 @@
                 <h3 id="practice-title">Luyện viết</h3>
             </div>
             
-            <div class="character-info" id="character-info">
-                <div class="char-display">
-                    <span class="hanzi" id="hanzi-display">一</span>
-                    <div class="char-details">
-                        <p><strong>Hán Việt:</strong> <span id="hanviet-display">nhất</span>
-                           <button class="btn-audio" id="speak-hanviet-btn" title="Đọc âm Hán Việt">🔊</button>
-                        </p>
-                        <p><strong>Pinyin:</strong> <span id="pinyin-display">yī</span>
-                           <button class="btn-audio" id="speak-pinyin-btn" title="Đọc Pinyin">🔊</button>
-                        </p>
-                        <p><strong>Nghĩa:</strong> <span id="meaning-display">Số một</span>
-                           <button class="btn-audio" id="speak-meaning-btn" title="Đọc nghĩa">🔊</button>
-                        </p>
-                        <button class="btn btn-primary btn-small" id="speak-all-btn">🔊 Đọc tất cả</button>
+            <!-- Character Info Card -->
+            <div class="character-info-card" id="character-info">
+                <div class="char-display-large">
+                    <span class="hanzi-large-display" id="hanzi-display">一</span>
+                    <div class="char-details-grid">
+                        <div class="char-detail-item">
+                            <span class="detail-label">Hán Việt:</span>
+                            <span class="detail-value" id="hanviet-display">nhất</span>
+                            <button class="btn-audio-small" id="speak-hanviet-btn" title="Đọc">🔊</button>
+                        </div>
+                        <div class="char-detail-item">
+                            <span class="detail-label">Pinyin:</span>
+                            <span class="detail-value" id="pinyin-display">yī</span>
+                            <button class="btn-audio-small" id="speak-pinyin-btn" title="Đọc">🔊</button>
+                        </div>
+                        <div class="char-detail-item">
+                            <span class="detail-label">Nghĩa:</span>
+                            <span class="detail-value" id="meaning-display">Số một</span>
+                            <button class="btn-audio-small" id="speak-meaning-btn" title="Đọc">🔊</button>
+                        </div>
                     </div>
+                    <button class="btn btn-primary btn-small" id="speak-all-btn">🔊 Đọc tất cả</button>
                 </div>
             </div>
 
-            <div class="canvas-container">
-                <canvas id="practice-canvas"></canvas>
-                <div class="canvas-controls">
-                    <button class="btn btn-icon btn-kid-friendly" id="trace-btn" title="Tô chữ (dễ nhớ)">
-                        <span class="btn-icon-text">✏️ Tô chữ</span>
+            <!-- Practice Mode Selector -->
+            <div class="practice-mode-selector">
+                <h4>Chọn chế độ luyện tập:</h4>
+                <div class="mode-buttons">
+                    <button class="btn btn-mode active" id="mode-free-btn" data-mode="free">
+                        <span class="mode-icon">✍️</span>
+                        <span class="mode-title">Tự do</span>
+                        <span class="mode-desc">Vẽ chữ tự do</span>
                     </button>
-                    <button class="btn btn-icon btn-kid-friendly" id="guide-btn" title="Hiện hướng dẫn">
-                        <span class="btn-icon-text">👁️ Hướng dẫn</span>
+                    <button class="btn btn-mode" id="mode-trace-btn" data-mode="trace">
+                        <span class="mode-icon">✏️</span>
+                        <span class="mode-title">Tô chữ</span>
+                        <span class="mode-desc">Tô theo nét mờ</span>
                     </button>
-                    <button class="btn btn-icon btn-kid-friendly" id="undo-btn" title="Hoàn tác">
-                        <span class="btn-icon-text">↶ Hoàn tác</span>
-                    </button>
-                    <button class="btn btn-icon btn-kid-friendly" id="clear-btn" title="Xóa hết">
-                        <span class="btn-icon-text">🗑️ Xóa</span>
+                    <button class="btn btn-mode" id="mode-quiz-btn" data-mode="quiz">
+                        <span class="mode-icon">🎯</span>
+                        <span class="mode-title">Quiz</span>
+                        <span class="mode-desc">Kiểm tra thứ tự nét</span>
                     </button>
                 </div>
             </div>
 
+            <!-- Canvas Container -->
+            <div class="canvas-wrapper">
+                <div class="canvas-container">
+                    <canvas id="practice-canvas"></canvas>
+                    <canvas id="trace-overlay-canvas"></canvas>
+                    <div class="canvas-label" id="canvas-label">Vẽ chữ ở đây</div>
+                </div>
+                
+                <!-- Canvas Controls -->
+                <div class="canvas-controls-panel">
+                    <button class="btn btn-control" id="animate-stroke-btn">
+                        <span class="control-icon">▶️</span>
+                        <span class="control-text">Xem thứ tự nét</span>
+                    </button>
+                    <button class="btn btn-control" id="guide-btn">
+                        <span class="control-icon">👁️</span>
+                        <span class="control-text">Hướng dẫn</span>
+                    </button>
+                    <button class="btn btn-control" id="undo-btn">
+                        <span class="control-icon">↶</span>
+                        <span class="control-text">Hoàn tác</span>
+                    </button>
+                    <button class="btn btn-control" id="clear-btn">
+                        <span class="control-icon">🗑️</span>
+                        <span class="control-text">Xóa hết</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stroke Counter -->
             <div class="stroke-counter" id="stroke-counter">
                 <!-- Dynamic stroke dots -->
             </div>
 
-            <div class="practice-controls">
-                <button class="btn btn-primary btn-large" id="animate-stroke-btn">▶️ Xem thứ tự nét</button>
-                <button class="btn btn-secondary btn-large" id="start-quiz-btn">🎯 Bắt đầu Quiz</button>
-            </div>
-            
-            <div class="practice-tips">
-                <div class="tip-card">
+            <!-- Practice Tips -->
+            <div class="practice-tips" id="practice-tips">
+                <div class="tip-card" id="tip-free" style="display: block;">
                     <span class="tip-icon">💡</span>
-                    <p><strong>Mẹo:</strong> Dùng ngón tay hoặc bút stylus để vẽ chữ. Bấm nút "Tô chữ" để xem đường nét mờ và tô theo!</p>
+                    <p><strong>Chế độ Tự do:</strong> Dùng ngón tay hoặc bút stylus để vẽ chữ tự do trên canvas.</p>
+                </div>
+                <div class="tip-card" id="tip-trace" style="display: none;">
+                    <span class="tip-icon">✏️</span>
+                    <p><strong>Chế độ Tô chữ:</strong> Bạn sẽ thấy đường nét mờ của chữ. Hãy tô theo đường nét đó để luyện tập!</p>
+                </div>
+                <div class="tip-card" id="tip-quiz" style="display: none;">
+                    <span class="tip-icon">🎯</span>
+                    <p><strong>Chế độ Quiz:</strong> Vẽ chữ theo đúng thứ tự nét. Hệ thống sẽ kiểm tra và cho điểm!</p>
                 </div>
             </div>
         </section>

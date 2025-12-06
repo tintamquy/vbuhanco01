@@ -322,11 +322,150 @@ a:hover {
   flex-wrap: wrap;
 }
 
-/* Canvas Container */
+/* Character Info Card */
+.character-info-card {
+  background: linear-gradient(135deg, #FFF9C4 0%, #FFE082 100%);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+  border: 3px solid var(--primary-color);
+}
+
+.char-display-large {
+  text-align: center;
+}
+
+.hanzi-large-display {
+  font-size: 5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: var(--spacing-md);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.char-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.char-detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.detail-value {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Practice Mode Selector */
+.practice-mode-selector {
+  background: var(--surface);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.practice-mode-selector h4 {
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  color: var(--primary-color);
+}
+
+.mode-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.btn-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+  border: 3px solid var(--border-color);
+  background: var(--surface);
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-mode:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-mode.active {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%);
+  box-shadow: var(--shadow-md);
+}
+
+.mode-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.mode-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.mode-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Canvas Wrapper */
+.canvas-wrapper {
+  background: var(--surface);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+}
+
 .canvas-container {
   position: relative;
-  margin: var(--spacing-lg) auto;
+  margin: 0 auto var(--spacing-md);
   max-width: 500px;
+  background: #FAFAFA;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+}
+
+.canvas-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 1;
+  transition: opacity 0.3s;
+}
+
+.canvas-container.has-content .canvas-label {
+  opacity: 0;
 }
 
 #practice-canvas {
@@ -341,41 +480,73 @@ a:hover {
   margin: 0 auto;
   touch-action: none;
   cursor: crosshair;
+  position: relative;
+  z-index: 2;
+}
+
+#trace-overlay-canvas {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  width: calc(100% - 32px);
+  max-width: 400px;
+  aspect-ratio: 1;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#trace-overlay-canvas.active {
+  opacity: 1;
 }
 
 #practice-canvas:active {
   cursor: crosshair;
 }
 
-.canvas-controls {
-  display: flex;
-  justify-content: center;
+.canvas-controls-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: var(--spacing-sm);
   margin-top: var(--spacing-md);
-  flex-wrap: wrap;
 }
 
-.canvas-controls .btn-icon {
+.btn-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
   background: var(--surface);
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
-  min-width: auto;
-  padding: 10px 16px;
-  border-radius: 20px;
+  border-radius: var(--border-radius);
   font-size: 0.9rem;
+  transition: all 0.3s ease;
+  min-height: 60px;
 }
 
-.canvas-controls .btn-icon:hover {
+.btn-control:hover {
   background: var(--primary-color);
   color: white;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.canvas-controls .btn-icon.active {
+.btn-control.active {
   background: var(--primary-color);
   color: white;
   box-shadow: var(--shadow-md);
+}
+
+.control-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.control-text {
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 /* Stroke Counter */

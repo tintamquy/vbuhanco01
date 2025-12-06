@@ -7,6 +7,10 @@ export class CanvasWriter {
       return;
     }
     
+    // Get trace overlay canvas
+    this.traceCanvas = document.getElementById('trace-overlay-canvas');
+    this.traceCtx = this.traceCanvas ? this.traceCanvas.getContext('2d') : null;
+    
     this.ctx = this.canvas.getContext('2d');
     
     // Touch optimization - ngăn scroll khi vẽ
@@ -51,8 +55,20 @@ export class CanvasWriter {
     this.canvas.style.width = rect.width + 'px';
     this.canvas.style.height = rect.height + 'px';
     
+    // Initialize trace overlay canvas
+    if (this.traceCanvas && this.traceCtx) {
+      this.traceCanvas.width = rect.width * dpr;
+      this.traceCanvas.height = rect.height * dpr;
+      this.traceCtx.scale(dpr, dpr);
+      this.traceCanvas.style.width = rect.width + 'px';
+      this.traceCanvas.style.height = rect.height + 'px';
+    }
+    
     // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+    if (this.traceCtx) {
+      this.traceCtx.clearRect(0, 0, this.traceCanvas.width / dpr, this.traceCanvas.height / dpr);
+    }
     
     if (this.options.showGrid) {
       this.drawGrid();
@@ -392,9 +408,10 @@ export class CanvasWriter {
     console.log('Using alternative outline method');
     if (!this.targetCharacter) return;
     
-    // Draw character as outline using canvas
-    const ctx = this.ctx;
-    const size = this.canvas.width / (window.devicePixelRatio || 1);
+    // Draw on trace overlay canvas instead of main canvas
+    const ctx = this.traceCtx || this.ctx;
+    const canvas = this.traceCanvas || this.canvas;
+    const size = canvas.width / (window.devicePixelRatio || 1);
     const centerX = size / 2;
     const centerY = size / 2;
     const fontSize = size * 0.5;
@@ -404,21 +421,30 @@ export class CanvasWriter {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Draw outline (stroke)
-    ctx.strokeStyle = 'rgba(139, 69, 19, 0.6)';
-    ctx.lineWidth = 4;
+    // Draw outline (stroke) - darker for visibility
+    ctx.strokeStyle = 'rgba(139, 69, 19, 0.7)';
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     ctx.strokeText(this.targetCharacter, centerX, centerY);
     
     // Draw fill (lighter)
-    ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
+    ctx.fillStyle = 'rgba(139, 69, 19, 0.25)';
     ctx.fillText(this.targetCharacter, centerX, centerY);
     
     ctx.restore();
     
-    // Redraw grid
+    // Show trace overlay
+    if (this.traceCanvas) {
+      this.traceCanvas.classList.add('active');
+    }
+    
+    // Redraw grid on main canvas
     if (this.options.showGrid) {
       this.drawGrid();
     }
+    
+    console.log('Alternative outline drawn on trace canvas');
   }
   
   // Bật/tắt chế độ tô chữ
