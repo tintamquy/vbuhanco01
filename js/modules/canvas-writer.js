@@ -380,101 +380,129 @@ export class CanvasWriter {
     });
   }
   
-  // Hiển thị outline để tô
+  // Hiển thị outline để tô - Luôn dùng fallback để đảm bảo hoạt động
   showTraceOutline() {
     if (!this.targetCharacter) {
       console.warn('No character to trace');
       return;
     }
     
-    // Clear canvas first
+    console.log('Showing trace outline for:', this.targetCharacter);
+    
+    // Clear main canvas (user drawing)
     this.clear();
     
+    // Always use alternative method for reliability
+    // Hanzi Writer's showOutline can be unreliable
+    this.showOutlineAlternative();
+    
+    // Also try Hanzi Writer if available (as backup)
     if (this.hanziWriter) {
       try {
-        // Method 1: Try showOutline
+        // Try to show outline via Hanzi Writer
         if (typeof this.hanziWriter.showOutline === 'function') {
           this.hanziWriter.showOutline({
             onComplete: () => {
-              console.log('Outline shown via showOutline');
-              if (this.options.showGrid) {
-                this.drawGrid();
-              }
+              console.log('Hanzi Writer outline shown');
             },
             onError: (err) => {
-              console.warn('showOutline error, trying alternative:', err);
-              this.showOutlineAlternative();
+              console.warn('Hanzi Writer outline failed, using fallback:', err);
             }
           });
-        } else {
-          // Method 2: Try setOptions and show
-          this.hanziWriter.setOptions({
-            showOutline: true,
-            outlineColor: 'rgba(139, 69, 19, 0.6)'
-          });
-          
-          // Try to trigger outline display
-          if (typeof this.hanziWriter.show === 'function') {
-            this.hanziWriter.show();
-          }
-          
-          // Redraw grid
-          if (this.options.showGrid) {
-            this.drawGrid();
-          }
         }
       } catch (error) {
-        console.error('Error showing outline:', error);
-        this.showOutlineAlternative();
+        console.warn('Hanzi Writer error:', error);
       }
-    } else {
-      // Fallback
-      this.showOutlineAlternative();
     }
   }
   
-  // Alternative method to show outline
+  // Alternative method to show outline - Vẽ outline rõ ràng trên trace canvas
   showOutlineAlternative() {
-    console.log('Using alternative outline method');
+    console.log('Using alternative outline method for:', this.targetCharacter);
     if (!this.targetCharacter) return;
     
-    // Draw on trace overlay canvas instead of main canvas
-    const ctx = this.traceCtx || this.ctx;
-    const canvas = this.traceCanvas || this.canvas;
-    const size = canvas.width / (window.devicePixelRatio || 1);
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const fontSize = size * 0.5;
+    // Always use trace overlay canvas for outline
+    if (!this.traceCanvas || !this.traceCtx) {
+      console.warn('Trace canvas not available, using main canvas');
+      this.drawOutlineOnMainCanvas();
+      return;
+    }
     
-    ctx.save();
-    ctx.font = `bold ${fontSize}px "Microsoft YaHei", "SimSun", Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    // Clear trace canvas first
+    const traceSize = this.traceCanvas.width / (window.devicePixelRatio || 1);
+    this.traceCtx.clearRect(0, 0, traceSize, traceSize);
     
-    // Draw outline (stroke) - darker for visibility
-    ctx.strokeStyle = 'rgba(139, 69, 19, 0.7)';
-    ctx.lineWidth = 5;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.strokeText(this.targetCharacter, centerX, centerY);
+    const centerX = traceSize / 2;
+    const centerY = traceSize / 2;
+    const fontSize = traceSize * 0.55;
     
-    // Draw fill (lighter)
-    ctx.fillStyle = 'rgba(139, 69, 19, 0.25)';
-    ctx.fillText(this.targetCharacter, centerX, centerY);
+    this.traceCtx.save();
     
-    ctx.restore();
+    // Try to use a Chinese font, fallback to Arial
+    this.traceCtx.font = `bold ${fontSize}px "Microsoft YaHei", "SimSun", "STKaiti", "KaiTi", Arial, sans-serif`;
+    this.traceCtx.textAlign = 'center';
+    this.traceCtx.textBaseline = 'middle';
+    
+    // Draw multiple strokes to create outline effect
+    // Stroke 1: Outer stroke (thick, darker)
+    this.traceCtx.strokeStyle = 'rgba(139, 69, 19, 0.8)';
+    this.traceCtx.lineWidth = 8;
+    this.traceCtx.lineJoin = 'round';
+    this.traceCtx.lineCap = 'round';
+    this.traceCtx.strokeText(this.targetCharacter, centerX, centerY);
+    
+    // Stroke 2: Inner stroke (medium)
+    this.traceCtx.strokeStyle = 'rgba(139, 69, 19, 0.6)';
+    this.traceCtx.lineWidth = 5;
+    this.traceCtx.strokeText(this.targetCharacter, centerX, centerY);
+    
+    // Fill: Light fill for visibility
+    this.traceCtx.fillStyle = 'rgba(139, 69, 19, 0.3)';
+    this.traceCtx.fillText(this.targetCharacter, centerX, centerY);
+    
+    this.traceCtx.restore();
     
     // Show trace overlay
-    if (this.traceCanvas) {
-      this.traceCanvas.classList.add('active');
-    }
+    this.traceCanvas.classList.add('active');
+    this.traceCanvas.style.opacity = '1';
     
     // Redraw grid on main canvas
     if (this.options.showGrid) {
       this.drawGrid();
     }
     
-    console.log('Alternative outline drawn on trace canvas');
+    console.log('Alternative outline drawn on trace canvas - should be visible now');
+  }
+  
+  // Draw outline on main canvas if trace canvas not available
+  drawOutlineOnMainCanvas() {
+    if (!this.targetCharacter || !this.ctx) return;
+    
+    const size = this.canvas.width / (window.devicePixelRatio || 1);
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const fontSize = size * 0.55;
+    
+    this.ctx.save();
+    this.ctx.font = `bold ${fontSize}px "Microsoft YaHei", "SimSun", Arial, sans-serif`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    
+    // Draw outline
+    this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.7)';
+    this.ctx.lineWidth = 6;
+    this.ctx.lineJoin = 'round';
+    this.ctx.strokeText(this.targetCharacter, centerX, centerY);
+    
+    // Draw fill
+    this.ctx.fillStyle = 'rgba(139, 69, 19, 0.25)';
+    this.ctx.fillText(this.targetCharacter, centerX, centerY);
+    
+    this.ctx.restore();
+    
+    if (this.options.showGrid) {
+      this.drawGrid();
+    }
   }
   
   // Bật/tắt chế độ tô chữ
@@ -565,11 +593,37 @@ export class CanvasWriter {
   }
   
   clear() {
+    if (!this.canvas || !this.ctx) return;
+    
     const dpr = window.devicePixelRatio || 1;
-    this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+    const width = this.canvas.width / dpr;
+    const height = this.canvas.height / dpr;
+    
+    // Clear main canvas (user drawing)
+    this.ctx.clearRect(0, 0, width, height);
     this.allStrokes = [];
     this.currentStroke = [];
-    this.initCanvas();
+    
+    // Don't clear trace canvas - keep outline visible
+    // Only clear trace canvas when switching modes
+    
+    // Redraw grid
+    if (this.options.showGrid) {
+      this.drawGrid();
+    }
+  }
+  
+  // Clear everything including trace
+  clearAll() {
+    this.clear();
+    if (this.traceCanvas && this.traceCtx) {
+      const dpr = window.devicePixelRatio || 1;
+      const width = this.traceCanvas.width / dpr;
+      const height = this.traceCanvas.height / dpr;
+      this.traceCtx.clearRect(0, 0, width, height);
+      this.traceCanvas.classList.remove('active');
+      this.traceCanvas.style.opacity = '0';
+    }
   }
   
   redrawStrokes() {

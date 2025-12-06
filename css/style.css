@@ -455,6 +455,15 @@ a:hover {
   justify-content: center;
 }
 
+/* Ensure both canvases are positioned correctly */
+.canvas-container canvas {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  right: var(--spacing-md);
+  bottom: var(--spacing-md);
+}
+
 .canvas-label {
   position: absolute;
   top: 50%;
@@ -508,13 +517,15 @@ a:hover {
   pointer-events: none;
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.5s ease;
   display: block !important;
   visibility: visible !important;
+  background: transparent !important;
 }
 
 #trace-overlay-canvas.active {
-  opacity: 1;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 #practice-canvas:active {

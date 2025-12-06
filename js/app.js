@@ -693,28 +693,55 @@ class HanCoApp {
     switch(mode) {
       case 'free':
         // Free mode - clear and ready to draw
-        this.canvasWriter.clear();
-        this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: false });
-        if (canvasLabel) canvasLabel.textContent = 'Vẽ chữ tự do ở đây';
+        if (this.canvasWriter) {
+          this.canvasWriter.clearAll(); // Clear trace too
+          this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: false });
+          
+          // Hide trace canvas
+          const traceCanvas = document.getElementById('trace-overlay-canvas');
+          if (traceCanvas) {
+            traceCanvas.classList.remove('active');
+            traceCanvas.style.opacity = '0';
+          }
+        }
+        if (canvasLabel) {
+          canvasLabel.textContent = 'Vẽ chữ tự do ở đây';
+          canvasLabel.style.opacity = '0.5';
+        }
         if (canvasContainer) canvasContainer.classList.remove('has-content');
         showToast('Chế độ Tự do: Vẽ chữ tự do trên canvas', 'info', 3000);
         break;
         
       case 'trace':
         // Trace mode - show outline
-        this.canvasWriter.clear();
-        this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: true });
-        setTimeout(() => {
-          if (this.canvasWriter) {
-            this.canvasWriter.showTraceOutline();
-            // Show trace overlay
-            const traceCanvas = document.getElementById('trace-overlay-canvas');
-            if (traceCanvas) {
-              traceCanvas.classList.add('active');
+        if (this.canvasWriter) {
+          // Clear everything first
+          this.canvasWriter.clearAll();
+          
+          // Load character
+          this.canvasWriter.loadCharacter(this.currentCharacter.hanzi, { traceMode: true });
+          
+          // Show outline after a delay to ensure canvas is ready
+          setTimeout(() => {
+            if (this.canvasWriter) {
+              console.log('Showing trace outline...');
+              this.canvasWriter.showTraceOutline();
+              
+              // Ensure trace canvas is visible
+              const traceCanvas = document.getElementById('trace-overlay-canvas');
+              if (traceCanvas) {
+                traceCanvas.classList.add('active');
+                traceCanvas.style.opacity = '1';
+                traceCanvas.style.display = 'block';
+                console.log('Trace canvas activated');
+              }
             }
-          }
-        }, 300);
-        if (canvasLabel) canvasLabel.textContent = 'Tô theo đường nét mờ';
+          }, 500);
+        }
+        if (canvasLabel) {
+          canvasLabel.textContent = 'Tô theo đường nét mờ';
+          canvasLabel.style.opacity = '0.3';
+        }
         if (canvasContainer) canvasContainer.classList.add('has-content');
         showToast('✨ Chế độ Tô chữ: Tô theo đường nét mờ để luyện tập! 🎨', 'success', 5000);
         break;
